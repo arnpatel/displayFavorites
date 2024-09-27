@@ -25,24 +25,23 @@
   <div id="favorites-container"></div>
 
   <script>
-    // Function to parse query string into a key-value object
+    // Function to parse query string and group product info
     function getQueryParams() {
-      const queryString = window.location.search;
-      const urlParams = new URLSearchParams(queryString);
-      let products = [];
-      let index = 1;
+      const urlParams = new URLSearchParams(window.location.search);
+      const descriptions = urlParams.getAll('description');
+      const thumbnailUrls = urlParams.getAll('thumbnailUrl');
       
-      while (urlParams.has(`description`) && urlParams.has(`thumbnailUrl`)) {
-        const description = urlParams.getAll('description')[index - 1];
-        const thumbnailUrl = urlParams.getAll('thumbnailUrl')[index - 1];
-        
-        products.push({
-          description: description,
-          thumbnailUrl: thumbnailUrl
-        });
-        index++;
+      // Check if the number of descriptions matches the number of thumbnailUrls
+      if (descriptions.length !== thumbnailUrls.length) {
+        console.error('Descriptions and Thumbnail URLs mismatch.');
+        return [];
       }
-      return products;
+
+      // Combine descriptions and thumbnailUrls into product objects
+      return descriptions.map((desc, i) => ({
+        description: desc,
+        thumbnailUrl: thumbnailUrls[i]
+      }));
     }
 
     // Function to display products

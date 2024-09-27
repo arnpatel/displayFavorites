@@ -4,47 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Favorite Products</title>
-  <style>
-    .product {
-      margin-bottom: 20px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      width: 300px;
-    }
-    .product img {
-      max-width: 100%;
-    }
-    .product-description {
-      font-size: 16px;
-    }
-  </style>
 </head>
 <body>
   <h1>Your Favorite Products</h1>
   <div id="favorites-container"></div>
 
   <script>
-    // Function to parse query string and group product info
+    // Simple function to parse query string and return products
     function getQueryParams() {
       const urlParams = new URLSearchParams(window.location.search);
       const descriptions = urlParams.getAll('description');
       const thumbnailUrls = urlParams.getAll('thumbnailUrl');
-      
-      // Check if the number of descriptions matches the number of thumbnailUrls
-      if (descriptions.length !== thumbnailUrls.length) {
-        console.error('Descriptions and Thumbnail URLs mismatch.');
-        return [];
+      let products = [];
+
+      // Create a product object for each pair of description and thumbnailUrl
+      for (let i = 0; i < descriptions.length; i++) {
+        products.push({
+          description: descriptions[i],
+          thumbnailUrl: thumbnailUrls[i]
+        });
       }
 
-      // Combine descriptions and thumbnailUrls into product objects
-      return descriptions.map((desc, i) => ({
-        description: desc,
-        thumbnailUrl: thumbnailUrls[i]
-      }));
+      return products;
     }
 
-    // Function to display products
+    // Function to display products on the page
     function displayFavorites() {
       const products = getQueryParams();
       const container = document.getElementById('favorites-container');
@@ -54,25 +38,24 @@
         return;
       }
 
-      products.forEach((product, index) => {
+      // Loop through each product and add it to the container
+      products.forEach((product) => {
         const productDiv = document.createElement('div');
-        productDiv.classList.add('product');
-        
-        const img = document.createElement('img');
-        img.src = decodeURIComponent(product.thumbnailUrl);
-        img.alt = `Product ${index + 1}`;
-        
-        const desc = document.createElement('p');
-        desc.classList.add('product-description');
-        desc.textContent = decodeURIComponent(product.description);
-        
-        productDiv.appendChild(img);
-        productDiv.appendChild(desc);
+        const productImage = document.createElement('img');
+        const productDescription = document.createElement('p');
+
+        productImage.src = product.thumbnailUrl;
+        productImage.alt = 'Product Image';
+        productImage.style.width = '150px'; // Just to keep image size consistent
+        productDescription.textContent = product.description;
+
+        productDiv.appendChild(productImage);
+        productDiv.appendChild(productDescription);
         container.appendChild(productDiv);
       });
     }
 
-    // Call the function to display favorite products on page load
+    // Run the display function when the page loads
     window.onload = displayFavorites;
   </script>
 </body>

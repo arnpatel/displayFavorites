@@ -1,47 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Favorites Display</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .product { border: 1px solid #ccc; margin-bottom: 20px; padding: 10px; border-radius: 5px; }
-        .thumbnail { max-width: 100px; }
-        .description { font-size: 14px; color: #555; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Favorite Products</title>
+  <style>
+    .product {
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      width: 300px;
+    }
+    .product img {
+      max-width: 100%;
+    }
+    .product-description {
+      font-size: 16px;
+    }
+  </style>
 </head>
 <body>
+  <h1>Your Favorite Products</h1>
+  <div id="favorites-container"></div>
 
-<h1>Your Favorite Items</h1>
-<div id="products"></div>
+  <script>
+    // Function to parse query string into a key-value object
+    function getQueryParams() {
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      let products = [];
+      let index = 1;
+      
+      while (urlParams.has(`description`) && urlParams.has(`thumbnailUrl`)) {
+        const description = urlParams.getAll('description')[index - 1];
+        const thumbnailUrl = urlParams.getAll('thumbnailUrl')[index - 1];
+        
+        products.push({
+          description: description,
+          thumbnailUrl: thumbnailUrl
+        });
+        index++;
+      }
+      return products;
+    }
 
-<script>
-    // Parse the URL parameters
-    const params = new URLSearchParams(window.location.search);
+    // Function to display products
+    function displayFavorites() {
+      const products = getQueryParams();
+      const container = document.getElementById('favorites-container');
 
-    // Extract product information
-    const products = params.getAll('pid').map((id) => {
-        return {
-            description: params.get(`desc_${id}`),
-            thumbnailUrl: params.get(`img_${id}`),
-            id: id
-        };
-    });
+      if (products.length === 0) {
+        container.innerHTML = '<p>No favorite products found.</p>';
+        return;
+      }
 
-    // Display products on the page
-    const productContainer = document.getElementById('products');
-    products.forEach(product => {
+      products.forEach((product, index) => {
         const productDiv = document.createElement('div');
-        productDiv.className = 'product';
-        productDiv.innerHTML = `
-            <h2>Item ID: ${product.id}</h2>
-            <p class="description">Description: ${product.description}</p>
-            <img class="thumbnail" src="${product.thumbnailUrl}" alt="Thumbnail">
-        `;
-        productContainer.appendChild(productDiv);
-    });
-</script>
+        productDiv.classList.add('product');
+        
+        const img = document.createElement('img');
+        img.src = decodeURIComponent(product.thumbnailUrl);
+        img.alt = `Product ${index + 1}`;
+        
+        const desc = document.createElement('p');
+        desc.classList.add('product-description');
+        desc.textContent = decodeURIComponent(product.description);
+        
+        productDiv.appendChild(img);
+        productDiv.appendChild(desc);
+        container.appendChild(productDiv);
+      });
+    }
 
+    // Call the function to display favorite products on page load
+    window.onload = displayFavorites;
+  </script>
 </body>
 </html>

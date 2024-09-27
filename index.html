@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorites Display</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .product { border: 1px solid #ccc; margin-bottom: 20px; padding: 10px; border-radius: 5px; }
+        .thumbnail { max-width: 100px; }
+        .description { font-size: 14px; color: #555; }
+    </style>
+</head>
+<body>
+
+<h1>Your Favorite Items</h1>
+<div id="products"></div>
+
+<script>
+    // Parse the URL parameters
+    const params = new URLSearchParams(window.location.search);
+
+    // Extract product information
+    const products = params.getAll('pid').map((id) => {
+        return {
+            description: params.get(`desc_${id}`),
+            thumbnailUrl: params.get(`img_${id}`),
+            id: id
+        };
+    });
+
+    // Display products on the page
+    const productContainer = document.getElementById('products');
+    products.forEach(product => {
+        const productDiv = document.createElement('div');
+        productDiv.className = 'product';
+        productDiv.innerHTML = `
+            <h2>Item ID: ${product.id}</h2>
+            <p class="description">Description: ${product.description}</p>
+            <img class="thumbnail" src="${product.thumbnailUrl}" alt="Thumbnail">
+        `;
+        productContainer.appendChild(productDiv);
+    });
+</script>
+
+</body>
+</html>

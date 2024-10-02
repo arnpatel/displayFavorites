@@ -1,62 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Favorite Products</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Products Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .product-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .product-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            width: 250px;
+            text-align: center;
+        }
+        .product-card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        .product-card h3 {
+            margin: 10px 0;
+        }
+        .product-card p {
+            color: #666;
+        }
+    </style>
 </head>
 <body>
-  <h1>Your Favorite Products</h1>
-  <div id="favorites-container"></div>
+    <div id="productContainer" class="product-container"></div>
 
-  <script>
-    // Simple function to parse query string and return products
-    function getQueryParams() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const descriptions = urlParams.getAll('description');
-      const thumbnailUrls = urlParams.getAll('thumbnailUrl');
-      let products = [];
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const jsonUrl = 'https://3d-qc.walmartimages.com/spatial-exp-v2/vpro/sams/MMKitchen/MMKitchen.json';
 
-      // Create a product object for each pair of description and thumbnailUrl
-      for (let i = 0; i < descriptions.length; i++) {
-        products.push({
-          description: descriptions[i],
-          thumbnailUrl: thumbnailUrls[i]
+            fetch(jsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const productContainer = document.getElementById('productContainer');
+                    const groups = data.groups;
+
+                    groups.forEach(group => {
+                        group.flavors.forEach(flavor => {
+                            flavor.items.forEach(item => {
+                                const card = createProductCard(item);
+                                productContainer.appendChild(card);
+                            });
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching product data:', error);
+                });
+
+            function createProductCard(product) {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${product.thumbnailUrl}" alt="${product.description}">
+                    <h3>${product.description}</h3>
+                    <p>Item ID: ${product.itemId}</p>
+                `;
+                return card;
+            }
         });
-      }
-
-      return products;
-    }
-
-    // Function to display products on the page
-    function displayFavorites() {
-      const products = getQueryParams();
-      const container = document.getElementById('favorites-container');
-
-      if (products.length === 0) {
-        container.innerHTML = '<p>No favorite products found.</p>';
-        return;
-      }
-
-      // Loop through each product and add it to the container
-      products.forEach((product) => {
-        const productDiv = document.createElement('div');
-        const productImage = document.createElement('img');
-        const productDescription = document.createElement('p');
-
-        productImage.src = product.thumbnailUrl;
-        productImage.alt = 'Product Image';
-        productImage.style.width = '150px'; // Just to keep image size consistent
-        productDescription.textContent = product.description;
-
-        productDiv.appendChild(productImage);
-        productDiv.appendChild(productDescription);
-        container.appendChild(productDiv);
-      });
-    }
-
-    // Run the display function when the page loads
-    window.onload = displayFavorites;
-  </script>
+    </script>
 </body>
 </html>

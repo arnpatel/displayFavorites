@@ -3,80 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Information</title>
+    <title>Item Details</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
             padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            max-width: 500px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background-color: #f4f4f4;
         }
         h1 {
-            text-align: center;
+            color: #333;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 200px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         img {
             max-width: 100%;
-            border-radius: 8px;
-        }
-        .info {
-            margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
-    <h1>Product Information</h1>
-    <label for="itemId">Enter Item ID:</label>
-    <input type="text" id="itemId" placeholder="e.g., 1217771572">
-    <button onclick="getProductInfo()">Get Product Info</button>
+    <h1>Item Details Lookup</h1>
+    <input type="text" id="itemId" placeholder="Enter Item ID" />
+    <button onclick="getItemDetails()">Get Details</button>
 
-    <div class="info" id="productInfo"></div>
+    <div class="result" id="result"></div>
 
     <script>
-        let data = null;
-
-        // Fetch the data from the URL
-        fetch('https://3d-qc.walmartimages.com/spatial-exp-v2/vpro/sams/MMKitchen/MMKitchen.json')
-            .then(response => response.json())
-            .then(jsonData => {
-                data = jsonData; // Store the fetched data for later use
-                console.log('Data fetched:', data); // Log data to inspect structure
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
-
-        function getProductInfo() {
+        async function getItemDetails() {
             const itemId = document.getElementById('itemId').value;
-            const productInfoDiv = document.getElementById('productInfo');
-            productInfoDiv.innerHTML = '';
+            const url = 'https://3d-qc.walmartimages.com/spatial-exp-v2/vpro/sams/MMKitchen/MMKitchen.json';
 
-            let found = false;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
 
-            if (data) {
-                data.groups.forEach(group => {
-                    group.flavors.forEach(flavor => {
-                        flavor.items.forEach(item => {
-                            console.log('Checking item:', item); // Log each item being checked
-                            if (item.itemId === itemId) {
-                                productInfoDiv.innerHTML = `
+                let itemFound = false;
+                let resultHtml = '';
+
+                // Searching for the item with the specified ID
+                for (const group of data.groups) {
+                    for (const flavor of group.flavors) {
+                        for (const item of flavor.items) {
+                            if (item.id === itemId) {
+                                itemFound = true;
+                                resultHtml += `
                                     <h2>${item.description}</h2>
-                                    <img src="${item.thumbnailUrl}" alt="${item.description}">
+                                    <img src="${item.thumbnailUrl}" alt="${item.description}" />
                                 `;
-                                found = true;
+                                break;
                             }
-                        });
-                    });
-                });
-            } else {
-                productInfoDiv.innerHTML = '<p>Data is still loading, please try again.</p>';
-            }
+                        }
+                        if (itemFound) break;
+                    }
+                    if (itemFound) break;
+                }
 
-            if (!found) {
-                productInfoDiv.innerHTML = `<p>Product not found for Item ID: ${itemId}</p>`;
+                if (!itemFound) {
+                    resultHtml = '<p>Item not found. Please check the ID and try again.</p>';
+                }
+
+                document.getElementById('result').innerHTML = resultHtml;
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<p>Error fetching data. Please try again later.</p>';
+                console.error('Error fetching data:', error);
             }
         }
     </script>

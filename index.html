@@ -44,20 +44,28 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const jsonUrl = 'https://3d-qc.walmartimages.com/spatial-exp-v2/vpro/sams/MMKitchen/MMKitchen.json';
+            
+            // Function to get product IDs from URL
+            function getProductIdsFromUrl() {
+                const params = new URLSearchParams(window.location.search);
+                return params.getAll('pid');
+            }
 
             fetch(jsonUrl)
                 .then(response => response.json())
                 .then(data => {
                     const productContainer = document.getElementById('productContainer');
-                    const groups = data.groups;
+                    const productIds = getProductIdsFromUrl();
+                    const allProducts = data.groups.flatMap(group => 
+                        group.flavors.flatMap(flavor => flavor.items)
+                    );
 
-                    groups.forEach(group => {
-                        group.flavors.forEach(flavor => {
-                            flavor.items.forEach(item => {
-                                const card = createProductCard(item);
-                                productContainer.appendChild(card);
-                            });
-                        });
+                    productIds.forEach(pid => {
+                        const product = allProducts.find(item => item.itemId === pid);
+                        if (product) {
+                            const card = createProductCard(product);
+                            productContainer.appendChild(card);
+                        }
                     });
                 })
                 .catch(error => {
